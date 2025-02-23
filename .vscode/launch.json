@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch CLI",
+      "program": "${workspaceFolder}/bin/index.js",
+      "sourceMaps": true,
+      "preLaunchTask": "tsc: build",
+      "outFiles": ["${workspaceFolder}/bin/**/*.js"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

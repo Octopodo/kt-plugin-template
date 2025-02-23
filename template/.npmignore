@@ -1,0 +1,7 @@
+./dist
+./vscode
+./node_modules
+./test
+vite.config.ts
+vite.es.config.ts
+.npmignore

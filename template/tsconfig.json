@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ES3",
+        "module": "CommonJS",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": [],
+        "sourceMap": true,
+        "types": [
+            "./src/global",
+            "./node_modules/types-for-adobe/shared/PlugPlugExternalObject",
+            "./node_modules/types-for-adobe/shared/XMPScript"
+        ],
+        "typeRoots": ["./src/libs"]
+    },
+    "include": ["src"]
+}
