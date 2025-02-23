@@ -24,13 +24,13 @@ async function createPlugin() {
             name: 'targetProgram',
             message: '¿Wich is the target program?',
             choices: [
+                'AfterEffects',
                 'ExtendScript',
                 'Photoshop',
                 'Premiere',
-                'AfterEffects',
                 'Illustrator'
             ],
-            default: 'ExtendScript'
+            default: 'AfterEffects'
         },
         {
             type: 'confirm',
