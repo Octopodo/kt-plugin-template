@@ -1,28 +1,27 @@
 {
-  "name": "kt-plugin-template",
-  "version": "1.0.0",
-  "description": "A template for creating a KT plugins for ExtendScript",
-  "main": "index.js",
-  "bin": {
-    "kt-es-plugin": "./bin/kt-plugin-template.ts"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "scripts": {
-    "build": "tsc",
-    "publishOnly": "npm run build && npm publish --access public"
-  },
-  "keywords": [
-    "ExtendScript",
-    "KT",
-    "plugin"
-  ],
-  "author": "Miguel de Mendoza",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^22.13.5",
-    "inquirer": "^12.4.2",
-    "typescript": "^5.7.3"
-  }
+    "name": "create-kt-plugin",
+    "version": "1.0.0",
+    "description": "A template for creating a KT plugins for ExtendScript",
+    "bin": {
+        "create-kt-es-plugin": "./bin/index.js"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "scripts": {
+        "build": "tsc",
+        "publishOnly": "npm run build && npm publish --access public"
+    },
+    "keywords": [
+        "ExtendScript",
+        "KT",
+        "plugin"
+    ],
+    "author": "Miguel de Mendoza",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^22.13.5",
+        "inquirer": "^12.4.2",
+        "typescript": "^5.7.3"
+    }
 }
