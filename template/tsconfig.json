@@ -11,7 +11,6 @@
         "lib": [],
         "sourceMap": true,
         "types": [
-            "./src/global",
             "./node_modules/types-for-adobe/shared/PlugPlugExternalObject",
             "./node_modules/types-for-adobe/shared/XMPScript"
         ],

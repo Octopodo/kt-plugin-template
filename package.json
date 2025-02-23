@@ -1,16 +1,16 @@
 {
     "name": "create-kt-plugin",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "description": "A template for creating a KT plugins for ExtendScript",
     "bin": {
-        "create-kt-es-plugin": "./bin/index.js"
+        "create-kt-plugin": "./bin/index.js"
     },
     "engines": {
         "node": ">=14.0.0"
     },
     "scripts": {
         "build": "tsc",
-        "publishOnly": "npm run build && npm publish --access public"
+        "publishOnly": "npm install && npm run build"
     },
     "keywords": [
         "ExtendScript",
@@ -19,9 +19,16 @@
     ],
     "author": "Miguel de Mendoza",
     "license": "ISC",
+    "dependencies": {
+        "inquirer": "^12.4.2"
+    },
     "devDependencies": {
         "@types/node": "^22.13.5",
-        "inquirer": "^12.4.2",
         "typescript": "^5.7.3"
-    }
+    },
+    "files": [
+        "bin/",
+        "template/",
+        ""
+    ]
 }

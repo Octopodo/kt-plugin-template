@@ -32,7 +32,7 @@ async function createPlugin() {
                 'Premiere',
                 'Illustrator'
             ],
-            default: 'ExtendScript'
+            default: 'AfterEffects'
         },
         {
             type: 'confirm',
