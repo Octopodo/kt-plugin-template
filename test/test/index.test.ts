@@ -1,2 +1,2 @@
 #include "./../dist/index.js";
-#include "MyPlugin.test.jsx";
+#include "Test.test.jsx";

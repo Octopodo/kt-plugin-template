@@ -2,3 +2,4 @@ template/package.json
 .vscode
 .gitignore
 # node_modules
+!template/.npmignore

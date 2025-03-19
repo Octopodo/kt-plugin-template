@@ -15,23 +15,24 @@ export const extendscriptConfig = (
     console.log(outPath);
     const config: RollupOptions = {
         input: extendscriptEntry,
-        treeshake: true,
+        treeshake: false,
         output: {
             file: outPath,
             sourcemap: true,
-            footer: `thisObj.KT = KT;`
+            // format: 'iife',
+            exports: 'auto'
         },
-        external: [],
+        external: ['json2'],
         plugins: [
             json(),
             nodeResolve({
                 extensions
             }),
-
             babel({
                 extensions,
+                exclude: /node_modules\/(?!kt-core)/,
                 babelrc: false,
-                babelHelpers: 'bundled',
+                babelHelpers: 'inline',
                 presets: [
                     [
                         '@babel/preset-env',
@@ -55,20 +56,23 @@ export const extendscriptConfig = (
                 iife: true,
                 globalThis: GLOBAL_THIS
             }),
-
+            jsxBin('off'),
             {
-                name: 'modify-final-bundle',
-                generateBundle(options, bundle) {
-                    for (const fileName of Object.keys(bundle)) {
-                        const chunk = bundle[fileName];
-                        if (chunk.type === 'chunk') {
-                            // Modifica el código del archivo final
-                            chunk.code = chunk.code.replace(
-                                /(^|\n)\s*export\s+(default\s+)?({[^}]+}|\w+\s*(=|\([^)]*\))?.*?(;|\n|$)|class\s+\w+\s*{[\s\S]*?}|\s*function\s+\w+\s*\([^)]*\)\s*{[\s\S]*?});/g,
-                                '$1'
-                            );
-                        }
+                // Plugin personalizado sin MagicString
+                name: 'remove-exports',
+                transform(code, id) {
+                    if (id.endsWith('index.ts')) {
+                        // Elimina exportaciones como 'export { KT }'
+                        const modifiedCode = code.replace(
+                            /(^|\n)\s*export\s+(default\s+)?({[^}]+}|\w+\s*(=|\([^)]*\))?.*?(;|\n|$)|class\s+\w+\s*{[\s\S]*?}|\s*function\s+\w+\s*\([^)]*\)\s*{[\s\S]*?})/g,
+                            '$1' // Conserva el salto de línea inicial, elimina la exportación
+                        );
+                        return {
+                            code: modifiedCode,
+                            map: null // Sin mapa de origen por simplicidad
+                        };
                     }
+                    return null; // No transforma otros archivos
                 }
             }
         ]
@@ -95,7 +99,7 @@ export const extendscriptConfig = (
                         .write(config.output as OutputOptions)
                         .then(() => {
                             console.log('Archivo actualizado:', outPath);
-                            event.result.close();
+                            event.result.close(); // Cierra el bundle después de escribir
                         });
                     break;
                 case 'END':
@@ -106,6 +110,8 @@ export const extendscriptConfig = (
                     break;
             }
         });
+        // No cierres el watcher inmediatamente para que siga escuchando
+        // watcher.close(); // Esto estaba cortando el watch
     }
 
     if (isProduction) {

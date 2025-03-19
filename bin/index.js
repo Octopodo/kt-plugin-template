@@ -35,10 +35,15 @@ async function createPlugin() {
             default: 'AfterEffects'
         },
         {
-            type: 'confirm',
-            name: 'installKT',
-            message: '¿Install KT?',
-            default: false
+            type: 'list',
+            name: 'appVersion',
+            message: '¿Wich is the target app version?',
+            when: (answers) => answers.targetProgram !== 'ExtendScript',
+            choices: async (answers) => {
+                const versions = await getAppAvailableVersions(answers.targetProgram);
+                return versions;
+            },
+            default: '23.0'
         },
         {
             type: 'input',
@@ -59,20 +64,14 @@ async function createPlugin() {
             default: true
         }
     ]);
-    const { pluginName, targetProgram, installDeps, installKT } = answers;
+    const { pluginName, targetProgram, installDeps, appVersion } = answers;
     const sourceDir = path_1.default.join(__dirname, '../template');
     const targetDir = path_1.default.resolve(process.cwd(), pluginName);
-    const ktDependencies = [];
-    if (installKT) {
-        ktDependencies.push('kt-es-core-ts');
-        if (targetProgram === 'AfterEffects') {
-            ktDependencies.push('kt-es-ae-ts');
-        }
-    }
+    const ktDependencies = ['kt-core'];
     try {
         // Copia la carpeta template
         await promises_1.default.mkdir(targetDir, { recursive: true });
-        await copyDir(sourceDir, targetDir, pluginName, answers.author, answers.description, ktDependencies);
+        await copyDir(sourceDir, targetDir, pluginName, answers.author, answers.description, ktDependencies, targetProgram, appVersion);
         console.log(`Project "${pluginName}" created at ${targetDir}`);
         // Instala dependencias si se seleccionó
         if (installDeps) {
@@ -90,7 +89,7 @@ async function createPlugin() {
         console.error('Error building the project:', err);
     }
 }
-async function copyDir(src, dest, pluginName, author = '', description = '', ktDependencies = []) {
+async function copyDir(src, dest, pluginName, author = '', description = '', ktDependencies = [], targetProgram, appVersion) {
     const entries = await promises_1.default.readdir(src, { withFileTypes: true });
     const kebapName = toKebabCase(pluginName);
     const upperCamelName = toUpperCamelCase(pluginName);
@@ -101,7 +100,7 @@ async function copyDir(src, dest, pluginName, author = '', description = '', ktD
         const name = entry.name;
         if (entry.isDirectory()) {
             await promises_1.default.mkdir(destPath, { recursive: true });
-            await copyDir(srcPath, destPath, pluginName);
+            await copyDir(srcPath, destPath, pluginName, author, description, ktDependencies, targetProgram, appVersion);
         }
         else {
             const content = await promises_1.default.readFile(srcPath, 'utf-8');
@@ -111,6 +110,10 @@ async function copyDir(src, dest, pluginName, author = '', description = '', ktD
             }
             else if (entry.name === 'vite.es.config.ts') {
                 newContent = modifyViteConfig(newContent, ktDependencies);
+            }
+            else if (entry.name === 'tsconfig.json' &&
+                targetProgram !== 'ExtendScript') {
+                newContent = addAppTypesToTsConfig(newContent, targetProgram, appVersion);
             }
             else {
                 newContent = newContent.replace(/MyPlugin/g, upperCamelName);
@@ -145,6 +148,42 @@ function modifyViteConfig(content, ktDependencies = []) {
     //modify "exclude: /node_modules/" to include kt dependencies"
     const newContent = content.replace(/exclude: \/node_modules\//, `exclude: /node_modules\\/(?!${ktDependencies.join('|')})/`);
     return newContent;
+}
+async function getAppAvailableVersions(app) {
+    const typesForAdobePath = path_1.default.dirname(require.resolve('types-for-adobe/package.json'));
+    const appPath = path_1.default.join(typesForAdobePath, app);
+    console.log('Finding verions:', appPath);
+    try {
+        const appDir = await promises_1.default.readdir(appPath, { withFileTypes: true });
+        if (!appDir || appDir.length === 0) {
+            throw new Error(`App ${app} not found or empty`);
+        }
+        const versions = appDir
+            .filter((dir) => dir.isDirectory())
+            .map((dir) => dir.name);
+        return versions;
+    }
+    catch (err) {
+        console.error('Error al leer versiones:', err);
+        return ['Unknown'];
+    }
+}
+function addAppTypesToTsConfig(content, app, version) {
+    const appPath = `./node_modules/types-for-adobe/${app}/${version}`;
+    const tsconfig = JSON.parse(content);
+    tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+    tsconfig.compilerOptions.types = tsconfig.compilerOptions.types || [];
+    let alreadyAdded = false;
+    for (const type of tsconfig.compilerOptions.types) {
+        if (type === appPath) {
+            alreadyAdded = true;
+            break;
+        }
+    }
+    if (!alreadyAdded) {
+        tsconfig.compilerOptions.types.push(appPath);
+    }
+    return JSON.stringify(tsconfig, null, 2);
 }
 createPlugin();
 //# sourceMappingURL=index.js.map

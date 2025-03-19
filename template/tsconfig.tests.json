@@ -2,8 +2,8 @@
     "compilerOptions": {
         "target": "ES3",
         "module": "CommonJS",
-        "outDir": "./dist",
-        "rootDir": "./src",
+        "outDir": "./dist.test",
+        "rootDir": "./",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -17,5 +17,6 @@
             "./node_modules/types-for-adobe/AfterEffects/23.0"
         ]
     },
-    "include": ["src"]
+    "include": ["src/**/*", "src/tests/**/*"],
+    "exclude": ["node_modules", "dist"]
 }

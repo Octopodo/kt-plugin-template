@@ -1,4 +1,5 @@
-declare var thisObj: any;
-
+import { KT } from 'kt-core';
 import { MyPlugin } from './MyPlugin';
-thisObj.MyPlugin = MyPlugin;
+KT.Module('MyPlugin', MyPlugin);
+
+export { MyPlugin };
