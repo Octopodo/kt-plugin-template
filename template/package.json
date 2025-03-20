@@ -39,7 +39,7 @@
         "@vitejs/plugin-vue": "^5.2.1",
         "command-line-args": "^6.0.1",
         "kt-tsconfig-resolver": "^1.0.1",
-        "kt-testing-suite-ts": "^1.0.0",
+        "kt-testing-suite-core": "^1.0.0",
         "cross-env": "^7.0.3",
         "rimraf": "^3.0.2",
         "rollup-plugin-postprocess": "^1.0.2",
