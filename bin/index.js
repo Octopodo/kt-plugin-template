@@ -108,9 +108,6 @@ async function copyDir(src, dest, pluginName, author = '', description = '', ktD
             if (entry.name === 'package.json') {
                 newContent = await modifyPackageJson(newContent, kebapName, author, description, ktDependencies);
             }
-            else if (entry.name === 'vite.es.config.ts') {
-                newContent = modifyViteConfig(newContent, ktDependencies);
-            }
             else if (entry.name === 'tsconfig.json' &&
                 targetProgram !== 'ExtendScript') {
                 newContent = addAppTypesToTsConfig(newContent, targetProgram, appVersion);
@@ -144,11 +141,14 @@ async function modifyPackageJson(content, name, author = '', description = '', k
     const newContent = JSON.stringify(config, null, 2);
     return newContent;
 }
-function modifyViteConfig(content, ktDependencies = []) {
-    //modify "exclude: /node_modules/" to include kt dependencies"
-    const newContent = content.replace(/exclude: \/node_modules\//, `exclude: /node_modules\\/(?!${ktDependencies.join('|')})/`);
-    return newContent;
-}
+// function modifyViteConfig(content: string, ktDependencies: string[] = []) {
+//     //modify "exclude: /node_modules/" to include kt dependencies"
+//     const newContent = content.replace(
+//         /exclude: \/node_modules\//,
+//         `exclude: /node_modules\\/(?!${ktDependencies.join('|')})/`
+//     );
+//     return newContent;
+// }
 async function getAppAvailableVersions(app) {
     const typesForAdobePath = path_1.default.dirname(require.resolve('types-for-adobe/package.json'));
     const appPath = path_1.default.join(typesForAdobePath, app);

@@ -144,8 +144,6 @@ async function copyDir(
                     description,
                     ktDependencies
                 );
-            } else if (entry.name === 'vite.es.config.ts') {
-                newContent = modifyViteConfig(newContent, ktDependencies);
             } else if (
                 entry.name === 'tsconfig.json' &&
                 targetProgram !== 'ExtendScript'
@@ -195,14 +193,14 @@ async function modifyPackageJson(
     return newContent;
 }
 
-function modifyViteConfig(content: string, ktDependencies: string[] = []) {
-    //modify "exclude: /node_modules/" to include kt dependencies"
-    const newContent = content.replace(
-        /exclude: \/node_modules\//,
-        `exclude: /node_modules\\/(?!${ktDependencies.join('|')})/`
-    );
-    return newContent;
-}
+// function modifyViteConfig(content: string, ktDependencies: string[] = []) {
+//     //modify "exclude: /node_modules/" to include kt dependencies"
+//     const newContent = content.replace(
+//         /exclude: \/node_modules\//,
+//         `exclude: /node_modules\\/(?!${ktDependencies.join('|')})/`
+//     );
+//     return newContent;
+// }
 
 async function getAppAvailableVersions(app: string) {
     const typesForAdobePath = path.dirname(
