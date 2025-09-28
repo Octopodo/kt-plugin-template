@@ -6,7 +6,13 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
-
+const adobeAppsMap = {
+    AfterEffects: 'ae',
+    ExtendScript: 'es',
+    Photoshop: 'ps',
+    Premiere: 'pr',
+    Illustrator: 'ai'
+}
 async function createPlugin() {
     // Pregunta al usuario
     const answers = await inquirer.prompt([
@@ -45,6 +51,13 @@ async function createPlugin() {
             },
             default: '23.0'
         },
+        // Install testing framework?
+        {
+            type: 'confirm',
+            name: 'installTestingFramework',
+            message: '¿Install testing framework?',
+            default: true
+        },
         {
             type: 'input',
             name: 'author',
@@ -69,6 +82,11 @@ async function createPlugin() {
     const sourceDir = path.join(__dirname, '../template');
     const targetDir = path.resolve(process.cwd(), pluginName);
     const ktDependencies: string[] = ['kt-core'];
+    const devDependencies: string[] = [];
+    if (answers.installTestingFramework) {
+        const testingDep = getTestingDependency(targetProgram);
+        devDependencies.push(testingDep);
+    }
 
     try {
         // Copia la carpeta template
@@ -80,12 +98,14 @@ async function createPlugin() {
             answers.author,
             answers.description,
             ktDependencies,
+            devDependencies,
             targetProgram,
             appVersion
         );
 
         console.log(`Project "${pluginName}" created at ${targetDir}`);
-
+        // Si se seleccionó, añade dependencias de testing
+    
         // Instala dependencias si se seleccionó
         if (installDeps) {
             console.log('Installing dependencias...');
@@ -110,8 +130,10 @@ async function copyDir(
     author: string = '',
     description: string = '',
     ktDependencies: string[] = [],
+    devDependencies: string[] = [],
     targetProgram: string,
-    appVersion: string
+    appVersion: string,
+
 ) {
     const entries = await fs.readdir(src, { withFileTypes: true });
     const kebapName = toKebabCase(pluginName);
@@ -130,6 +152,7 @@ async function copyDir(
                 author,
                 description,
                 ktDependencies,
+                devDependencies,
                 targetProgram,
                 appVersion
             );
@@ -142,7 +165,8 @@ async function copyDir(
                     kebapName,
                     author,
                     description,
-                    ktDependencies
+                    ktDependencies,
+                    devDependencies
                 );
             } else if (
                 entry.name === 'tsconfig.json' &&
@@ -178,12 +202,17 @@ async function modifyPackageJson(
     name: string,
     author: string = '',
     description: string = '',
-    ktDependencies: string[] = []
+    ktDependencies: string[] = [],
+    ktDevDependencies: string[] = []
 ) {
     const config = JSON.parse(content);
     config.dependencies = config.dependencies || {};
+    config.devDependencies = config.devDependencies || {};
     ktDependencies.forEach((dep) => {
         config.dependencies[dep] = '*';
+    });
+    ktDevDependencies.forEach((dep) => {
+        config.devDependencies[dep] = '*';
     });
     config.name = name;
     config.author = author;
@@ -241,5 +270,8 @@ function addAppTypesToTsConfig(content: string, app: string, version: string) {
     return JSON.stringify(tsconfig, null, 2);
 }
 
+function getTestingDependency(targetProgram: string) {
+    return `kt-testing-suite-${adobeAppsMap[targetProgram as keyof typeof adobeAppsMap] || 'es'}`;
+}
 
 createPlugin();

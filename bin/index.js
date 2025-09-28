@@ -10,6 +10,13 @@ const path_1 = __importDefault(require("path"));
 const child_process_1 = require("child_process");
 const util_1 = require("util");
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
+const adobeAppsMap = {
+    AfterEffects: 'ae',
+    ExtendScript: 'es',
+    Photoshop: 'ps',
+    Premiere: 'pr',
+    Illustrator: 'ai'
+};
 async function createPlugin() {
     // Pregunta al usuario
     const answers = await inquirer_1.default.prompt([
@@ -45,6 +52,13 @@ async function createPlugin() {
             },
             default: '23.0'
         },
+        // Install testing framework?
+        {
+            type: 'confirm',
+            name: 'installTestingFramework',
+            message: '¿Install testing framework?',
+            default: true
+        },
         {
             type: 'input',
             name: 'author',
@@ -68,11 +82,17 @@ async function createPlugin() {
     const sourceDir = path_1.default.join(__dirname, '../template');
     const targetDir = path_1.default.resolve(process.cwd(), pluginName);
     const ktDependencies = ['kt-core'];
+    const devDependencies = [];
+    if (answers.installTestingFramework) {
+        const testingDep = getTestingDependency(targetProgram);
+        devDependencies.push(testingDep);
+    }
     try {
         // Copia la carpeta template
         await promises_1.default.mkdir(targetDir, { recursive: true });
-        await copyDir(sourceDir, targetDir, pluginName, answers.author, answers.description, ktDependencies, targetProgram, appVersion);
+        await copyDir(sourceDir, targetDir, pluginName, answers.author, answers.description, ktDependencies, devDependencies, targetProgram, appVersion);
         console.log(`Project "${pluginName}" created at ${targetDir}`);
+        // Si se seleccionó, añade dependencias de testing
         // Instala dependencias si se seleccionó
         if (installDeps) {
             console.log('Installing dependencias...');
@@ -89,7 +109,7 @@ async function createPlugin() {
         console.error('Error building the project:', err);
     }
 }
-async function copyDir(src, dest, pluginName, author = '', description = '', ktDependencies = [], targetProgram, appVersion) {
+async function copyDir(src, dest, pluginName, author = '', description = '', ktDependencies = [], devDependencies = [], targetProgram, appVersion) {
     const entries = await promises_1.default.readdir(src, { withFileTypes: true });
     const kebapName = toKebabCase(pluginName);
     const upperCamelName = toUpperCamelCase(pluginName);
@@ -100,13 +120,13 @@ async function copyDir(src, dest, pluginName, author = '', description = '', ktD
         const name = entry.name;
         if (entry.isDirectory()) {
             await promises_1.default.mkdir(destPath, { recursive: true });
-            await copyDir(srcPath, destPath, pluginName, author, description, ktDependencies, targetProgram, appVersion);
+            await copyDir(srcPath, destPath, pluginName, author, description, ktDependencies, devDependencies, targetProgram, appVersion);
         }
         else {
             const content = await promises_1.default.readFile(srcPath, 'utf-8');
             let newContent = content;
             if (entry.name === 'package.json') {
-                newContent = await modifyPackageJson(newContent, kebapName, author, description, ktDependencies);
+                newContent = await modifyPackageJson(newContent, kebapName, author, description, ktDependencies, devDependencies);
             }
             else if (entry.name === 'tsconfig.json' &&
                 targetProgram !== 'ExtendScript') {
@@ -128,11 +148,15 @@ function toUpperCamelCase(str) {
 function toKebabCase(str) {
     return str.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase());
 }
-async function modifyPackageJson(content, name, author = '', description = '', ktDependencies = []) {
+async function modifyPackageJson(content, name, author = '', description = '', ktDependencies = [], ktDevDependencies = []) {
     const config = JSON.parse(content);
     config.dependencies = config.dependencies || {};
+    config.devDependencies = config.devDependencies || {};
     ktDependencies.forEach((dep) => {
         config.dependencies[dep] = '*';
+    });
+    ktDevDependencies.forEach((dep) => {
+        config.devDependencies[dep] = '*';
     });
     config.name = name;
     config.author = author;
@@ -184,6 +208,9 @@ function addAppTypesToTsConfig(content, app, version) {
         tsconfig.compilerOptions.types.push(appPath);
     }
     return JSON.stringify(tsconfig, null, 2);
+}
+function getTestingDependency(targetProgram) {
+    return `kt-testing-suite-${adobeAppsMap[targetProgram] || 'es'}`;
 }
 createPlugin();
 //# sourceMappingURL=index.js.map
