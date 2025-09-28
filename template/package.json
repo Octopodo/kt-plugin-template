@@ -18,6 +18,6 @@
         "kt-core": "^1.0.0"
     },
     "devDependencies": {
-      
+      "kt-extendscript-builder": "*"
     }
 }
