@@ -241,4 +241,5 @@ function addAppTypesToTsConfig(content: string, app: string, version: string) {
     return JSON.stringify(tsconfig, null, 2);
 }
 
+
 createPlugin();
